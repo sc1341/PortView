@@ -7,14 +7,14 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install all dependencies (including devDependencies for build)
-# Use npm install to ensure devDependencies are included
+# Don't set NODE_ENV=production here - we need devDependencies
 RUN npm install
 
 # Copy source code
 COPY . .
 
-# Build the frontend (vite is needed here)
-RUN npm run build
+# Build the frontend using npx to ensure vite is found in PATH
+RUN npx vite build
 
 # Production stage
 FROM node:20-alpine
