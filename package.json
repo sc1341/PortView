@@ -1,5 +1,5 @@
 {
-  "name": "attack-surface-management",
+  "name": "portview",
   "version": "0.0.0",
   "private": true,
   "type": "module",
