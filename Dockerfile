@@ -6,13 +6,14 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+# Install all dependencies (including devDependencies for build)
+# Use npm install to ensure devDependencies are included
+RUN npm install
 
 # Copy source code
 COPY . .
 
-# Build the frontend
+# Build the frontend (vite is needed here)
 RUN npm run build
 
 # Production stage
