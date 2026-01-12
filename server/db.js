@@ -6,9 +6,7 @@ import { existsSync, mkdirSync } from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Ensure data directory exists
-// In Docker, use /app/data (ephemeral - data is lost when container is deleted)
-// In development, use ./data
+
 const dataDir = process.env.DATA_DIR || join(__dirname, '../data');
 if (!existsSync(dataDir)) {
   mkdirSync(dataDir, { recursive: true });
@@ -25,8 +23,13 @@ db.pragma('foreign_keys = ON');
  */
 function columnExists(tableName, columnName) {
   try {
-    // SQLite pragma_table_info doesn't support parameters, so we need to use string interpolation
-    // This is safe here because tableName and columnName are controlled by our code
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(tableName)) {
+      console.warn(`Invalid table name: ${tableName}`);
+      return false;
+    }
+    
+    // SQLite pragma_table_info doesn't support parameters for table name, so we need to use string interpolation
+    // This is safe here because we validate the table name above
     const result = db.prepare(`
       SELECT COUNT(*) as count
       FROM pragma_table_info('${tableName}')
@@ -56,6 +59,16 @@ function runMigrations() {
         ADD COLUMN folder_id TEXT;
       `);
       console.log('✅ Migration complete: folder_id column added');
+    }
+
+
+    if (scansTableExists && !columnExists('scans', 'scope_full_targets')) {
+      console.log('🔄 Migrating: Adding scope_full_targets column to scans table...');
+      db.exec(`
+        ALTER TABLE scans 
+        ADD COLUMN scope_full_targets TEXT;
+      `);
+      console.log('✅ Migration complete: scope_full_targets column added');
     }
   } catch (error) {
     console.warn('⚠️  Migration check failed:', error.message);
@@ -96,6 +109,7 @@ export function initDatabase() {
       scope_note TEXT,
       scope_file TEXT,
       scope_discovered_count INTEGER,
+      scope_full_targets TEXT,
       total_hosts INTEGER DEFAULT 0,
       total_ports INTEGER DEFAULT 0,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,

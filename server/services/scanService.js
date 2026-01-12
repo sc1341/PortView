@@ -8,7 +8,7 @@ const db = getDatabase();
  * @param {string} fileName - Optional filename
  */
 export function saveScanData(scanData, fileName = null) {
-  const scanId = `scan-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const scanId = `scan-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   const scanName = fileName || `Scan ${new Date().toLocaleString()}`;
   const scanInfo = scanData.scanInfo || {};
 
@@ -19,8 +19,8 @@ export function saveScanData(scanData, fileName = null) {
       INSERT INTO scans (
         id, name, filename, folder_id, scanner, args, start_time, start_time_str,
         version, xmloutputversion, scope_type, scope_display, scope_note,
-        scope_file, scope_discovered_count, total_hosts, total_ports
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        scope_file, scope_discovered_count, scope_full_targets, total_hosts, total_ports
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       scanId,
       scanName,
@@ -37,6 +37,7 @@ export function saveScanData(scanData, fileName = null) {
       scanInfo.scope?.note || null,
       scanInfo.scope?.file || null,
       scanInfo.scope?.discoveredCount || null,
+      scanInfo.scope?.fullTargets ? JSON.stringify(scanInfo.scope.fullTargets) : null,
       scanData.totalHosts || 0,
       scanData.totalPorts || 0
     );
@@ -212,6 +213,7 @@ export function getScanData(scanId) {
         note: scan.scope_note,
         file: scan.scope_file,
         discoveredCount: scan.scope_discovered_count,
+        fullTargets: scan.scope_full_targets ? JSON.parse(scan.scope_full_targets) : null,
       },
     },
     hosts: hostsWithData,

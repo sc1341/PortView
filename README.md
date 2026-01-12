@@ -2,7 +2,7 @@
 
 A modern Vue.js app for viewing and analyzing nmap XML scan results. Upload your scans, explore hosts and services, and browse your network scan data.
 
-> This project was vibe coded ✨
+> This project was vibe coded to please use at your own risk ✨
 
 ![PortView Demo](./demo.png)
 

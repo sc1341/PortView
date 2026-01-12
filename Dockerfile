@@ -3,18 +3,17 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
+# Copy package files first
+COPY package.json package-lock.json ./
 
-# Install all dependencies (including devDependencies for build)
-# Don't set NODE_ENV=production here - we need devDependencies
-RUN npm install
+# Install ALL dependencies (including devDependencies)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the frontend using npx to ensure vite is found in PATH
-RUN npx vite build
+# Verify vite is installed and build
+RUN ./node_modules/.bin/vite build
 
 # Production stage
 FROM node:20-alpine
